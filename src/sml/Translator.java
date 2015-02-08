@@ -2,9 +2,13 @@ package sml;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /*
  * The translator of a <b>S</b><b>M</b>al<b>L</b> program.
@@ -72,55 +76,90 @@ public class Translator {
 	// line should consist of an MML instruction, with its label already
 	// removed. Translate line into an instruction with label label
 	// and return the instruction
-	public Instruction getInstruction(String label) {
-		int s1; // Possible operands of the instruction
-		int s2;
-		int r;
-		int x;
+	public Instruction getInstruction(String label)
+        {
+            int s1; // Possible operands of the instruction
+            int s2;
+            int r;
+            int x;
+            String fn;
+                
+            if (line.equals(""))
+                return null;
 
-		if (line.equals(""))
-			return null;
+            String ins = scan();
+            String command = ConvertToClassName(ins);
 
-		String ins = scan();
-		switch (ins) {
-		case "add":
-			r = scanInt();
-			s1 = scanInt();
-			s2 = scanInt();
-			return new AddInstruction(label, r, s1, s2);
-                case "sub":
-			r = scanInt();
-			s1 = scanInt();
-                        s2 = scanInt();
-			return new SubInstruction(label, r, s1, s2);
-                case "mul":
-			r = scanInt();
-			s1 = scanInt();
-                        s2 = scanInt();
-			return new MulInstruction(label, r, s1, s2);
-                case "div":
-			r = scanInt();
-			s1 = scanInt();
-                        s2 = scanInt();
-			return new DivInstruction(label, r, s1, s2);
-                case "out":
-			r = scanInt();
-			s1 = scanInt();
-                        s2 = scanInt();
-			return new OutInstruction(label, r);
-		case "lin":
-			r = scanInt();
-			s1 = scanInt();
-			return new LinInstruction(label, r, s1);
-                case "bnz":
-			r = scanInt();
-			String fn = scan();
-			return new BnzInstruction(label, r, fn);
-		}
-
-		// You will have to write code here for the other instructions.
-
-		return null;
+            Class c;
+            try {
+                c = Class.forName(command);
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(Translator.class.getName()).log(Level.SEVERE, null, ex);
+                return null;
+            }
+            // if exception thrown then we know the command 
+            Constructor constructor = null;
+            
+            /*
+            String     int      int     int     String
+            label      r        s1      s2      fn
+            return new AddInstruction(label, r, s1, s2);
+            return new SubInstruction(label, r, s1, s2);
+            return new MulInstruction(label, r, s1, s2);
+            return new DivInstruction(label, r, s1, s2);
+            return new OutInstruction(label, r);
+            return new LinInstruction(label, r, s1);
+            return new BnzInstruction(label, r, fn);
+            */
+            try
+            {
+                try 
+                {
+                    // Add||Sub||Multiply||Divide
+                    constructor = c.getConstructor(String.class, int.class, int.class, int.class);
+                    r = scanInt();
+                    s1 = scanInt();
+                    s2 = scanInt();
+                    Object o = constructor.newInstance(label, r, s1, s2);
+                    return (Instruction) o;
+                } catch (NoSuchMethodException asmd) {
+                    try {
+                        // Lin
+                        constructor = c.getConstructor(String.class, int.class, int.class);
+                        r = scanInt();
+                        s1 = scanInt();
+                        Object o = constructor.newInstance(label, r, s1);
+                        return (Instruction) o;
+                    } catch (NoSuchMethodException l) {
+                        try {
+                            // Bnz
+                            constructor = c.getConstructor(String.class, int.class, String.class);
+                            r = scanInt();
+                            fn = scan();
+                            Object o = constructor.newInstance(label, r, fn);
+                            return (Instruction) o;
+                        } catch (NoSuchMethodException b) {
+                            try {
+                                //Out
+                                constructor = c.getConstructor(String.class, int.class);
+                                r = scanInt();
+                                Object o = constructor.newInstance(label, r);
+                                return (Instruction) o;
+                            } catch (NoSuchMethodException ex) {
+                                Logger.getLogger(Translator.class.getName()).log(Level.SEVERE, null, ex);
+                                // final exception therefore we have to exit!
+                                return null;
+                            }
+                        }
+                    }
+                }
+            } catch(IllegalAccessException|IllegalArgumentException|InstantiationException
+                    |InvocationTargetException|SecurityException ex)
+            {
+                Logger.getLogger(Translator.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+            return null;
 	}
 
 	/*
@@ -155,4 +194,14 @@ public class Translator {
 			return Integer.MAX_VALUE;
 		}
 	}
+
+    private String ConvertToClassName(String ins) {
+        String packageName = "sml";
+        String seperator = "."; 
+        String instruction = "Instruction";
+        
+        char[] opArray = ins.toCharArray();
+        opArray[0] = Character.toUpperCase(ins.charAt(0));
+        return packageName + seperator + new String(opArray) + instruction;
+    }
 }

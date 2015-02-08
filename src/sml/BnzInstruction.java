@@ -9,7 +9,7 @@ package sml;
 public class BnzInstruction extends Instruction {
 	private int register;
         private String function;
-        private boolean isZero;
+        private int value;
 
 	public BnzInstruction(String label, String opcode) {
 		super(label, opcode);
@@ -21,16 +21,21 @@ public class BnzInstruction extends Instruction {
                 this.function = function;
 	}
 
+        /**
+         * if the register is skip else goto another 
+         * function in the text file.
+         * @param m 
+         */
 	@Override
 	public void execute(Machine m) {
-            if(m.getRegisters().getRegister(register)!=0)
+            value = m.getRegisters().getRegister(register);
+            // Provides an exit
+            if(!isZero())
             {
                 int index = m.getLabels().indexOf(function);
-                if(index != -1)
+                if(index != -1) // Valid index... 
                 {
                     m.setPc(index);
-                    // Instruction get = m.getProg().get(index);
-                    // get.execute(m);
                 }
                 else
                 {
@@ -41,11 +46,11 @@ public class BnzInstruction extends Instruction {
 
 	@Override
 	public String toString() {
-		return super.toString() + " Reg(" + register + ") value is " + (isZero()? "zero" : "not zero" + " so calling function (" + function + ").");
+		return super.toString() + " Reg(" + register + ") value is " + (isZero()? "zero therefore exiting loop." : "not zero therefore will call function (" + function + ").");
 	}
         
         public boolean isZero()
         {
-            return isZero;
+            return (value == 0);
         }
 }

@@ -4,6 +4,8 @@
  * and open the template in the editor.
  */
 
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -73,7 +75,19 @@ public class SmlFileAcceptanceUnitTest {
      {
          m_translator.readAndTranslate(m_machine.getLabels(), m_machine.getProg());
          m_machine.execute();
-         int value = m_machine.getRegisters().getRegister(0);
-         assertEquals(22, value);
+         int index = 0;
+         
+         assertEquals(m_machine.getRegisters().getRegister(index++),0);
+         assertEquals(m_machine.getRegisters().getRegister(index++),1);
+         assertEquals(m_machine.getRegisters().getRegister(index++),1);
+         assertEquals(m_machine.getRegisters().getRegister(index++),2);
+         assertEquals(m_machine.getRegisters().getRegister(index++),3);
+         assertEquals(m_machine.getRegisters().getRegister(index++),6);
+         assertEquals(m_machine.getRegisters().getRegister(index++),3);
+         assertEquals(m_machine.getRegisters().getRegister(index++),0);
+         assertEquals(m_machine.getRegisters().getRegister(index++),100);
+         assertEquals(m_machine.getRegisters().getRegister(index++),1);
+         assertEquals(m_machine.getRegisters().getRegister(index++),1);
+         assertEquals(m_machine.getRegisters().getRegister(index++),0);
      }
 }

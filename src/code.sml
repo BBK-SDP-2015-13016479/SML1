@@ -5,3 +5,6 @@ f3 mul 21 21 20
 f4 sub 20 20 22
 f5 bnz 20 f3
 f6 out 21
+f7 lin 25 1
+f8 add 26 25 21
+f8 add 27 21 21
